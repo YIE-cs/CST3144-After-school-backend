@@ -1,6 +1,8 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
+const morgan = require("morgan");
+const path = require("path");
 app.use(cors());
 let lessons = require("./lesson.js");
 const port = 3000;
@@ -9,6 +11,9 @@ app.use((req, res, next) => {
   //   res.end("Hello World!");
   next();
 });
+
+app.use("/images", express.static(path.join(__dirname, "images")));
+
 app.get("/lessons", (req, res) => {
   res.json(lessons);
 });
