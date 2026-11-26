@@ -57,13 +57,22 @@ app.get("/lessons", async (req, res) => {
   }
 });
 
-app.get("/lessons/:id", (req, res) => {
-  let lessonId = req.params.id;
-  let lesson = lessons.find((lesson) => lesson.id == lessonId);
-  if (lesson) {
-    res.json(lesson);
-  } else {
-    res.status(404).send("Lesson not found");
+app.get("/lessons/:id", async (req, res) => {
+  try {
+    const lessonId = Number(req.params.id);
+
+    const lesson = await db1.collection("lesson").findOne({
+      id: lessonId,
+    });
+
+    if (lesson) {
+      res.json(lesson);
+    } else {
+      res.status(404).send("Lesson not found");
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error fetching lesson");
   }
 });
 
@@ -82,6 +91,33 @@ app.post("/order", async (req, res) => {
 
     res.status(500).json({
       message: "Failed to create order",
+    });
+  }
+});
+
+app.put("/lessons/:id", async (req, res) => {
+  try {
+    const lessonId = Number(req.params.id);
+    const updatedLesson = req.body;
+
+    const result = await db1
+      .collection("lesson")
+      .updateOne({ id: lessonId }, { $set: updatedLesson });
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({
+        message: "Lesson not found",
+      });
+    }
+
+    res.status(200).json({
+      message: "Lesson updated successfully",
+    });
+  } catch (error) {
+    console.error("Error updating lesson:", error);
+
+    res.status(500).json({
+      message: "Failed to update lesson",
     });
   }
 });
